@@ -40,8 +40,6 @@ function startTimer() {
         });
         return;
     }
-
-
 }
 
 function readInput() {

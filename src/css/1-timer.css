@@ -1,7 +1,16 @@
+:root {
+    font-family: 'Montserrat', sans-serif;
+    color: #2E2F42
+  }
+  
 #datetime-picker {
+    padding: 7px 15px;
     width: 272px;
     height: 40px;
+    border-radius: 4px;
     border: 1px solid #808080;
+    margin-right: 8px;
+    margin-bottom: 36px;
 }
 
 #datetime-picker:hover,
@@ -15,5 +24,52 @@
     outline: transparent;
 }
 
+#datetime-picker:disabled {
+    border-color: #808080;
+    color: #808080;
+    outline: transparent;
+}
 
+/* [data-start] */
+button[data-start] {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    min-width: 75px;
+    height: 40px;
+    border-radius: 8px;
+    margin: 0;
+    padding: 0;
+    color: #fff;
+    outline: transparent;;
+    border: transparent;
+    background-color: #4E75FF;
+}
 
+button[data-start]:disabled {
+    color: #989898;
+    background-color: #CFCFCF;
+}
+
+button[data-start]:hover {
+    background-color: #6C8CFF;
+}
+
+.timer {
+    display: flex;
+    justify-content: space-between;
+    width: 346px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+span.value {
+    font-size: 40px;
+}
+
+span.label {
+    font-size: 16px;
+}
