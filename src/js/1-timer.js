@@ -7,20 +7,25 @@ import 'izitoast/dist/css/iziToast.min.css';
 const datetime_pickr = document.querySelector('input#datetime-picker');
 const start = document.querySelector('button[data-start]');
 
-let userSelectedDate = '';
-
-//по більшій мірі реалізував на статиці. Ідея була дуже погана)
 class Timer {
-  constructor(UPDATE_TIMER_INTERVAL = 1000) {
-    this.idInteval = idInteval;
-    this.UPDATE_TIMER_INTERVAL = UPDATE_TIMER_INTERVAL;
-    this.timeLeft = 0;
+
+  #idInteval;
+  #timeLeft;
+  #userSelectedDate;
+  #UPDATE_TIMER_INTERVAL;
+
+  constructor(userSelectedDate = new Date(), UPDATE_TIMER_INTERVAL = 1000) {
+    this.#idInteval = null;
+    this.#timeLeft = 0;
+    this.#userSelectedDate = userSelectedDate;
+    this.#UPDATE_TIMER_INTERVAL = UPDATE_TIMER_INTERVAL;
   }
 
-  static startTimer() {
-    Timer.timeLeft = Date.parse(userSelectedDate) - Date.now();
-    
-    if (timeLeft < 0) {
+  startTimer() {
+    // JSBI.subtract(JSBI.BigInt(
+    this.#timeLeft = Date.parse(this.#userSelectedDate) - Date.now();
+    console.log(Date.parse(this.#userSelectedDate));
+    if (this.#timeLeft < 0) {
       iziToast.show({
         icon: 'fa-regular fa-circle-xmark',
         close: false,
@@ -34,11 +39,48 @@ class Timer {
       return;
     }
 
-    Timer.idInteval = setInterval(Timer.updateTimer, Timer.UPDATE_TIMER_INTERVAL);
-    console.log(Timer.idInteval)
+    this.#idInteval = setInterval(this.#updateTimer.bind(this), this.#UPDATE_TIMER_INTERVAL);
+    console.log(this.#idInteval)
   }
 
-  static *convertMs(ms) {
+  #updateTimer() {
+    console.log('Start interval');
+    console.log(this.#idInteval);
+    // console.log(clearInterval(this.#idInteval));
+    this.#timeLeft -= this.#UPDATE_TIMER_INTERVAL;
+    if(this.#timeLeft <= 0) {
+      clearInterval(this.#idInteval);
+      return;
+    }
+    console.log(this.#timeLeft);
+    const { days, hours, minutes, seconds } = Timer.#convertMs(this.#timeLeft);
+    console.log(seconds);
+    const data_seconds = document.querySelector('span[data-seconds]');
+    const data_minutes = document.querySelector('span[data-minutes]');
+    const data_hours = document.querySelector('span[data-hours]');
+    const data_days = document.querySelector('span[data-days]');
+    if(data_seconds || data_minutes || data_hours || data_days)
+    {
+      data_seconds.textContent = Timer.#addLeadingZero(seconds);
+      data_minutes.textContent = Timer.#addLeadingZero(minutes);
+      data_hours.textContent = Timer.#addLeadingZero(hours);
+      data_days.textContent = Timer.#addLeadingZero(days);
+    }
+    else {
+      iziToast.show({
+        icon: 'fa-regular fa-circle-xmark',
+        close: false,
+        iconColor: '#fff',
+        position: 'topRight',
+        backgroundColor: '#EF4040',
+        progressBarColor: '#B51B1B',
+        messageColor: '#fff',
+        message: 'Error interface',
+      });
+    }
+  }
+
+  static #convertMs(ms) {
 
     const second = 1000;
     const minute = second * 60;
@@ -53,21 +95,13 @@ class Timer {
     return { days, hours, minutes, seconds };
   }
 
-  static *addLeadingZero(value) {
-    return value.padStart(2, '0');
-  }
-
-  static updateTimer() {
-    console.log('Start interval');
-    console.log(Timer.idInteval);
-    console.log(clearInterval(Timer.idInteval));
-    // if(timeLeft - UPDATE_TIMER_INTERVAL < 0) {
-    //   clearInterval(idInteval);
-    // }
-    // const { days, hours, minutes, seconds } = this.convertMs(timeLeft);
-    
+  static #addLeadingZero(value) {
+    return value.toString().padStart(2, '0');
   }
 }
+
+let userSelectedDate = new Date();
+let bestTimer = new Timer(userSelectedDate);
 
 const options = {
   enableTime: true,
@@ -82,5 +116,13 @@ const options = {
 
 const datetime_flatpickr = flatpickr('input#datetime-picker', options);
 
-start.addEventListener('click', Timer.startTimer);
+datetime_pickr.addEventListener('change', () => {
+  // const userSelectedDate = selectedDates[0];
+  if (bestTimer) {
+    clearInterval(bestTimer.idInterval); // Stop the previous timer
+  }
+  bestTimer = new Timer(userSelectedDate);
+});
+
+start.addEventListener('click', bestTimer.startTimer.bind(bestTimer));
 
