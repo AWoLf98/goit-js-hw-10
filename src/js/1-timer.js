@@ -4,20 +4,21 @@ import iziToast from 'izitoast';
 import 'flatpickr/dist/flatpickr.min.css';
 import 'izitoast/dist/css/iziToast.min.css';
 
-const UPDATE_TIMER_INTERVAL = 1000;
-
 const datetime_pickr = document.querySelector('input#datetime-picker');
 const start = document.querySelector('button[data-start]');
 
 let userSelectedDate = '';
 
+//по більшій мірі реалізував на статиці. Ідея була дуже погана)
 class Timer {
-  static Timer(idInteval) {
+  constructor(UPDATE_TIMER_INTERVAL = 1000) {
     this.idInteval = idInteval;
+    this.UPDATE_TIMER_INTERVAL = UPDATE_TIMER_INTERVAL;
+    this.timeLeft = 0;
   }
 
   static startTimer() {
-    const timeLeft = Date.parse(userSelectedDate) - Date.now();
+    Timer.timeLeft = Date.parse(userSelectedDate) - Date.now();
     
     if (timeLeft < 0) {
       iziToast.show({
@@ -33,25 +34,20 @@ class Timer {
       return;
     }
 
-    this.idInteval = setInterval(Timer.updateTimer, UPDATE_TIMER_INTERVAL);
-    console.log(this.idInteval)
+    Timer.idInteval = setInterval(Timer.updateTimer, Timer.UPDATE_TIMER_INTERVAL);
+    console.log(Timer.idInteval)
   }
 
-
   static *convertMs(ms) {
-    // Number of milliseconds per unit of time
+
     const second = 1000;
     const minute = second * 60;
     const hour = minute * 60;
     const day = hour * 24;
 
-    // Remaining days
     const days = Math.floor(ms / day);
-    // Remaining hours
     const hours = Math.floor((ms % day) / hour);
-    // Remaining minutes
     const minutes = Math.floor(((ms % day) % hour) / minute);
-    // Remaining seconds
     const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
     return { days, hours, minutes, seconds };
@@ -64,7 +60,7 @@ class Timer {
   static updateTimer() {
     console.log('Start interval');
     console.log(Timer.idInteval);
-    // console.log(clearInterval(idInteval));
+    console.log(clearInterval(Timer.idInteval));
     // if(timeLeft - UPDATE_TIMER_INTERVAL < 0) {
     //   clearInterval(idInteval);
     // }
