@@ -45,7 +45,8 @@ button[data-start] {
     background-color: #4E75FF;
 }
 
-button[data-start]:hover {
+button[data-start]:hover,
+button[data-start]:focus  {
     background-color: #6C8CFF;
 }
 
