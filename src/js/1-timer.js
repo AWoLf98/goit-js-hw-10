@@ -7,24 +7,45 @@ import 'izitoast/dist/css/iziToast.min.css';
 const datetime_pickr = document.querySelector('input#datetime-picker');
 const start = document.querySelector('button[data-start]');
 
+//disabled потрібно згідно ТЗ тільки кнопку.
 class Timer {
-
+  #userSelectedDate;
   #idInteval;
   #timeLeft;
-  #userSelectedDate;
   #UPDATE_TIMER_INTERVAL;
+  #start;
 
-  constructor(userSelectedDate = new Date(), UPDATE_TIMER_INTERVAL = 1000) {
+  constructor(
+    userSelectedDate = new Date(),
+    selector = 'input#datetime-picker',
+    startQuerySelector = document.querySelector('button[data-start]'),
+    UPDATE_TIMER_INTERVAL = 1000
+  ) {
     this.#idInteval = null;
     this.#timeLeft = 0;
     this.#userSelectedDate = userSelectedDate;
     this.#UPDATE_TIMER_INTERVAL = UPDATE_TIMER_INTERVAL;
+    this.#start = startQuerySelector;
+    this.disabledInput();
+
+    const options = {
+      enableTime: true,
+      time_24hr: true,
+      defaultDate: new Date(),
+      minuteIncrement: 1,
+      onClose: selectedDates => {
+        this.#userSelectedDate = selectedDates[0];
+      },
+    };
+
+    const datetime_flatpickr = flatpickr(selector, options);
   }
 
   startTimer() {
-    // JSBI.subtract(JSBI.BigInt(
+    this.disabledInput();
+
     this.#timeLeft = Date.parse(this.#userSelectedDate) - Date.now();
-    console.log(Date.parse(this.#userSelectedDate));
+
     if (this.#timeLeft < 0) {
       iziToast.show({
         icon: 'fa-regular fa-circle-xmark',
@@ -39,34 +60,36 @@ class Timer {
       return;
     }
 
-    this.#idInteval = setInterval(this.#updateTimer.bind(this), this.#UPDATE_TIMER_INTERVAL);
-    console.log(this.#idInteval)
+    if (this.#idInteval) {
+      clearInterval(this.#idInteval);
+    }
+
+    this.#idInteval = setInterval(
+      this.#updateTimer.bind(this),
+      this.#UPDATE_TIMER_INTERVAL
+    );
   }
 
   #updateTimer() {
-    console.log('Start interval');
-    console.log(this.#idInteval);
-    // console.log(clearInterval(this.#idInteval));
     this.#timeLeft -= this.#UPDATE_TIMER_INTERVAL;
-    if(this.#timeLeft <= 0) {
+
+    if (this.#timeLeft <= 0) {
       clearInterval(this.#idInteval);
       return;
     }
-    console.log(this.#timeLeft);
+
     const { days, hours, minutes, seconds } = Timer.#convertMs(this.#timeLeft);
-    console.log(seconds);
     const data_seconds = document.querySelector('span[data-seconds]');
     const data_minutes = document.querySelector('span[data-minutes]');
     const data_hours = document.querySelector('span[data-hours]');
     const data_days = document.querySelector('span[data-days]');
-    if(data_seconds || data_minutes || data_hours || data_days)
-    {
+
+    if (data_seconds || data_minutes || data_hours || data_days) {
       data_seconds.textContent = Timer.#addLeadingZero(seconds);
       data_minutes.textContent = Timer.#addLeadingZero(minutes);
       data_hours.textContent = Timer.#addLeadingZero(hours);
       data_days.textContent = Timer.#addLeadingZero(days);
-    }
-    else {
+    } else {
       iziToast.show({
         icon: 'fa-regular fa-circle-xmark',
         close: false,
@@ -80,8 +103,21 @@ class Timer {
     }
   }
 
-  static #convertMs(ms) {
+  disabledInput() {
+    this.#start.setAttribute('disabled', 'disabled');
+  }
 
+  undisabledInput() {
+    
+    if (Date.parse(this.#userSelectedDate) - Date.now() < 0) {
+      this.#start.removeAttribute('disabled');
+    }
+    else {
+      this.disabledInput();
+    }
+  }
+
+  static #convertMs(ms) {
     const second = 1000;
     const minute = second * 60;
     const hour = minute * 60;
@@ -100,29 +136,7 @@ class Timer {
   }
 }
 
-let userSelectedDate = new Date();
-let bestTimer = new Timer(userSelectedDate);
-
-const options = {
-  enableTime: true,
-  time_24hr: true,
-  defaultDate: new Date(),
-  minuteIncrement: 1,
-  onClose(selectedDates) {
-    userSelectedDate = selectedDates[0];
-    // console.log(selectedDates[0]);
-  },
-};
-
-const datetime_flatpickr = flatpickr('input#datetime-picker', options);
-
-datetime_pickr.addEventListener('change', () => {
-  // const userSelectedDate = selectedDates[0];
-  if (bestTimer) {
-    clearInterval(bestTimer.idInterval); // Stop the previous timer
-  }
-  bestTimer = new Timer(userSelectedDate);
-});
+const bestTimer = new Timer();
 
 start.addEventListener('click', bestTimer.startTimer.bind(bestTimer));
-
+datetime_pickr.addEventListener('input', bestTimer.undisabledInput.bind(bestTimer));
