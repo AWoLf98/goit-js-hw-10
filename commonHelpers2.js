@@ -1,0 +1,2 @@
+import"./assets/modulepreload-polyfill-3cfb730f.js";/* empty css                     */import{i as e}from"./assets/vendor-77e16229.js";const r=document.querySelector(".form");r.addEventListener("submit",o=>{o.preventDefault(),e.show({icon:"fa-regular fa-circle-xmark",close:!1,iconColor:"#fff",position:"topRight",backgroundColor:"#EF4040",progressBarColor:"#B51B1B",messageColor:"#fff",message:"Please choose a date in the future"})});
+//# sourceMappingURL=commonHelpers2.js.map
