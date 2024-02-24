@@ -4,29 +4,28 @@ import iziToast from 'izitoast';
 import 'flatpickr/dist/flatpickr.min.css';
 import 'izitoast/dist/css/iziToast.min.css';
 
-const datetime_pickr = document.querySelector('input#datetime-picker');
 const start = document.querySelector('button[data-start]');
 
 //disabled потрібно згідно ТЗ тільки кнопку.
 class Timer {
-  #userSelectedDate;
   #idInteval;
   #timeLeft;
+  #userSelectedDate;
   #UPDATE_TIMER_INTERVAL;
   #start;
 
   constructor(
     userSelectedDate = new Date(),
-    selector = 'input#datetime-picker',
     startQuerySelector = document.querySelector('button[data-start]'),
+    selector = 'input#datetime-picker',
     UPDATE_TIMER_INTERVAL = 1000
   ) {
     this.#idInteval = null;
     this.#timeLeft = 0;
     this.#userSelectedDate = userSelectedDate;
-    this.#UPDATE_TIMER_INTERVAL = UPDATE_TIMER_INTERVAL;
     this.#start = startQuerySelector;
-    this.disabledInput();
+    this.#UPDATE_TIMER_INTERVAL = UPDATE_TIMER_INTERVAL;
+    this.#disabledInput();
 
     const options = {
       enableTime: true,
@@ -35,6 +34,7 @@ class Timer {
       minuteIncrement: 1,
       onClose: selectedDates => {
         this.#userSelectedDate = selectedDates[0];
+        this.#toggleButtonState();
       },
     };
 
@@ -42,23 +42,9 @@ class Timer {
   }
 
   startTimer() {
-    this.disabledInput();
+    this.#disabledInput();
 
     this.#timeLeft = Date.parse(this.#userSelectedDate) - Date.now();
-
-    if (this.#timeLeft < 0) {
-      iziToast.show({
-        icon: 'fa-regular fa-circle-xmark',
-        close: false,
-        iconColor: '#fff',
-        position: 'topRight',
-        backgroundColor: '#EF4040',
-        progressBarColor: '#B51B1B',
-        messageColor: '#fff',
-        message: 'Please choose a date in the future',
-      });
-      return;
-    }
 
     if (this.#idInteval) {
       clearInterval(this.#idInteval);
@@ -103,17 +89,25 @@ class Timer {
     }
   }
 
-  disabledInput() {
+  #disabledInput() {
     this.#start.setAttribute('disabled', 'disabled');
   }
 
-  undisabledInput() {
-    
-    if (Date.parse(this.#userSelectedDate) - Date.now() < 0) {
+  #toggleButtonState() {
+    if (Date.parse(this.#userSelectedDate) >= Date.now()) {
       this.#start.removeAttribute('disabled');
-    }
-    else {
-      this.disabledInput();
+    } else {
+      iziToast.show({
+        icon: 'fa-regular fa-circle-xmark',
+        close: false,
+        iconColor: '#fff',
+        position: 'topRight',
+        backgroundColor: '#EF4040',
+        progressBarColor: '#B51B1B',
+        messageColor: '#fff',
+        message: 'Please choose a date in the future',
+      });
+      this.#disabledInput();
     }
   }
 
@@ -139,4 +133,3 @@ class Timer {
 const bestTimer = new Timer();
 
 start.addEventListener('click', bestTimer.startTimer.bind(bestTimer));
-datetime_pickr.addEventListener('input', bestTimer.undisabledInput.bind(bestTimer));
